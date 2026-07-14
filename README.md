@@ -2,8 +2,8 @@
 
 **Multimodal MCI-to-Alzheimer's Disease Conversion Prediction using the ADNI Dataset**
 
-> Preliminary research work for PhD application | Direction A of thesis research  
-> Author: Sobia Arshad | Inje University, South Korea | GKS Scholar
+> | 
+> Author: Sobia Arshad | Inje University, South Korea | 
 
 ---
 
