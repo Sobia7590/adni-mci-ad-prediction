@@ -223,17 +223,7 @@ jupyter
 
 ---
 
-## 🔗 Connection to PhD Research (Direction B)
 
-This preliminary work (Direction A) motivates the proposed PhD project, with the connection now framed around APOE4's role as an independent predictive signal rather than an unproven interaction effect:
-
-| Direction A (This Repository) | Direction B (Proposed PhD) |
-|-------------------------------|---------------------------|
-| Binary classification: will MCI convert? | Generative: what will the brain look like at +12M/+24M? |
-| APOE4 as a predictive feature (SHAP rank #2 of 16) | APOE4 as a generative conditioning signal (FiLM) |
-| Output: risk probability | Output: synthesised 3D brain MRI at future timepoint |
-| Finding: APOE4 carries strong independent predictive signal (genetic-only AUC 0.657; SHAP rank #2) | Hypothesis: APOE4 gene-dose modulates spatiotemporal atrophy trajectory — to be tested generatively |
-| Method: Logistic Regression + SHAP, formally tested interactions | Method: 4D Diffusion Transformer in 3D VAE latent space |
 
 ---
 
