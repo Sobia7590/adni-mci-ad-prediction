@@ -2,7 +2,7 @@
 
 **Multimodal MCI-to-Alzheimer's Disease Conversion Prediction using the ADNI Dataset**
 
-> Preliminary research work for PhD application | Direction A of thesis research  
+> Preliminary research work for PhD application | Direction A of thesis research
 > Author: Sobia Arshad | Inje University, South Korea | GKS Scholar
 
 ---
@@ -15,45 +15,101 @@ This project builds and validates a **complete multimodal machine learning pipel
 
 - Data access, extraction, and preprocessing
 - Feature engineering from cognitive, genetic, and MRI modalities
-- Supervised ML model training and cross-validation
+- Censoring-aware target definition and repeated cross-validation
 - SHAP explainability analysis
-- APOE4 genotype subgroup analysis
+- Formal statistical testing of an APOE4 x cognition interaction hypothesis
 
 ---
 
-## 🏆 Key Results
+## 🏆 Key Results (Corrected Methodology)
+
+> **Note:** these results supersede an earlier version of this analysis. See [Methodology Corrections](#-methodology-corrections) below for what changed and why.
 
 | Metric | Value |
 |--------|-------|
 | Dataset | 675 MCI subjects — ADNI1–4 |
-| Features | 16 multimodal (cognitive + genetic + MRI) |
+| Censoring-safe analysis cohort | **473 subjects** (166 converters, 307 non-converters); 202 excluded for ambiguous follow-up status |
+| Features | 16 multimodal (cognitive + genetic + MRI + demographic) |
 | Best Model | Logistic Regression |
-| CV AUC (5-fold) | **0.808 ± 0.024** |
-| Test AUC | **0.869** |
-| Accuracy | 79% |
-| Precision | 0.80 |
+| CV AUC (5x5 repeated stratified CV, tuned) | **0.899 ± 0.032** |
+| Test AUC | **0.895** [95% CI 0.829–0.952] |
+| Brier Score (calibration) | 0.132 |
 
-### 🔑 Key Finding — APOE4 Subgroup Effect
+### Feature-Group Ablation
 
-| Subgroup | N | Conversion Rate | Model AUC |
-|----------|---|-----------------|-----------|
-| APOE4 Negative (ε4−) | 70 | 31.4% | 0.801 |
-| **APOE4 Positive (ε4+)** | **65** | **49.2%** | **0.916** |
-| Overall test set | 135 | 40.0% | 0.869 |
+Confirms multimodal fusion outperforms any single modality, though the margin over cognitive scores alone is modest:
 
-> **APOE4+ subjects convert at 49.2% vs 31.4%** — a 23 percentage-point gap. Model AUC rises to **0.916** in the APOE4+ subgroup. This demonstrates that APOE4 genotype carries strong residual predictive signal beyond cognitive and MRI features — directly motivating the proposed PhD work (Direction B: 4D Diffusion Transformer).
+| Feature Group | AUC (5-fold CV) |
+|----------------|------------------|
+| Demographic only | 0.492 |
+| Genetic only | 0.657 |
+| MRI only | 0.750 |
+| Cognitive only | 0.882 |
+| **All combined** | **0.901** |
+
+### 🔑 APOE4 Genotype: A Real Predictor, Tested Honestly
+
+An earlier version of this analysis reported a large AUC gap between APOE4-positive and APOE4-negative subgroups (0.916 vs. 0.801) based on splitting a small held-out test set (n=65 / n=70). That comparison was underpowered and has been superseded by a proper statistical test.
+
+**What holds up:** APOE4 carries genuine, independent predictive signal.
+- Genetic features alone achieve 0.657 AUC (clearly above chance)
+- APOE4 ranks **#2 of 16 features** by mean |SHAP value| (0.567), behind only ADAS-Cog13 (TOTAL13, 0.893)
+- APOE4-positive subjects show a markedly higher raw conversion rate (66.3%) than APOE4-negative subjects (35.8%) in the censoring-safe cohort
+
+**What does not hold up:** a formal interaction effect between APOE4 and cognitive decline severity.
+- We fit single logistic regression models testing `APOE4 × feature` interactions against five candidate predictors (CDRSB, FAQTOTAL, TOTAL13, MMSCORE, HIPPO_ICV), each controlling for the others
+- After Benjamini-Hochberg correction for multiple comparisons, **none of the five interactions were statistically significant** (corrected p-values ranged 0.127–0.632)
+
+This is a more conservative and defensible finding: APOE4 is a strong standalone predictor of conversion, but this dataset does not provide statistically robust evidence that it *modulates* the effect of other predictors. The absence of a detectable interaction may reflect a true null effect, or may simply reflect limited statistical power at this sample size (interaction effects generally require larger samples than main effects to detect) — both are noted as a limitation.
 
 ---
 
-## 📊 SHAP Feature Importance (Top 5)
+## 📊 SHAP Feature Importance (Corrected Cohort, Tuned Model)
 
-| Rank | Feature | SHAP Value | Category |
-|------|---------|------------|----------|
-| 1 | TOTAL13 (ADAS-Cog 13) | 0.507 | Cognitive |
-| 2 | HIPPO_ICV (Hippocampal vol / ICV) | 0.451 | MRI |
-| 3 | FAQTOTAL (Functional Activities) | 0.379 | Cognitive |
-| 4 | **APOE4 (ε4 carrier status)** | **0.309** | **Genetic** |
-| 5 | ST101SV (ICV) | 0.213 | MRI |
+| Rank | Feature | Mean \|SHAP\| | Category |
+|------|---------|--------------|----------|
+| 1 | TOTAL13 (ADAS-Cog 13) | 0.893 | Cognitive |
+| 2 | **APOE4 (ε4 carrier status)** | **0.567** | **Genetic** |
+| 3 | FAQTOTAL (Functional Activities) | 0.546 | Cognitive |
+| 4 | HIPPO_ICV (Hippocampal vol / ICV) | 0.526 | MRI |
+| 5 | ST40TS | 0.217 | MRI |
+
+*(Full 16-feature ranking in `figures/fig8_shap_importance.png`)*
+
+---
+
+## 📈 Figures
+
+All figures are generated by `05_generate_figures.py` from the corrected, censoring-safe cohort. Reproducible from raw data — see [Reproducing These Results](#-reproducing-these-results).
+
+| Figure | Description |
+|--------|-------------|
+| `figures/fig1_patient_flow.png` | Patient inclusion/exclusion flow (675 → 473, censoring correction) |
+| `figures/fig2_model_comparison.png` | Model comparison, 5x5 repeated stratified CV with tuning |
+| `figures/fig3_roc_curve.png` | ROC curve with bootstrap 95% CI band |
+| `figures/fig4_ablation.png` | Feature-group ablation (cognitive/genetic/MRI/demographic/combined) |
+| `figures/fig5_calibration.png` | Calibration (reliability) curve |
+| `figures/fig6_interaction_forest.png` | APOE4 x feature interaction tests, with corrected p-values |
+| `figures/fig7_converter_labels.png` | Converter/non-converter breakdown, corrected cohort |
+| `figures/fig8_shap_importance.png` | SHAP feature importance, corrected cohort + tuned model |
+
+---
+
+## 🔧 Methodology Corrections
+
+An earlier version of this pipeline (`03_modeling.ipynb`, results in `03_model_results_final.html`) had several methodological gaps that were identified and fixed. Documented here in the interest of transparency:
+
+| Issue | Original Approach | Corrected Approach |
+|-------|-------------------|---------------------|
+| **Censoring bias** | Non-converters labeled from any follow-up length, including subjects followed only a few months | Fixed 24-month prediction horizon; non-converters require ≥24 months of confirmed follow-up; ambiguous subjects excluded (202 of 675) |
+| **Evaluation** | Single 80/20 train/test split, default hyperparameters | 5x5 repeated stratified CV with nested hyperparameter search (`GridSearchCV`) |
+| **Uncertainty** | Point-estimate AUC only | Bootstrap 95% confidence intervals on all headline metrics |
+| **APOE4 subgroup claim** | Post-hoc test-set split by APOE4 status (n=65/70), AUC compared descriptively | Formal `APOE4 × feature` interaction terms tested in logistic regression, with Benjamini-Hochberg correction across 5 tests |
+| **Multimodal claim** | Asserted without a controlled comparison | Feature-group ablation study (cognitive/genetic/MRI/demographic vs. combined) |
+| **Calibration** | Not assessed | Brier score + reliability diagram added |
+| **Imputation** | Documentation (KNN) did not match code (median) | Code and documentation aligned on `KNNImputer` |
+
+Scripts: `04_improved_analysis.py` (corrected modeling pipeline) and `05_generate_figures.py` (publication-ready figure generation) implement these fixes and are included in this repository alongside the original exploratory notebooks.
 
 ---
 
@@ -62,11 +118,25 @@ This project builds and validates a **complete multimodal machine learning pipel
 ```
 adni-mci-ad-prediction/
 │
-├── 01_explore.ipynb          # Data loading, EDA, baseline statistics
-├── 02_converter_labels.ipynb # MCI converter label definition
-├── 03_modeling.ipynb         # ML models, CV, SHAP analysis
+├── 01_explore.ipynb            # Data loading, EDA, baseline statistics
+├── 02_converter_labels.ipynb   # MCI converter label definition (original, uncorrected labels)
+├── 03_modeling.ipynb           # Original ML models, CV, SHAP analysis (superseded — see below)
 │
-├── requirements.txt          # Python dependencies
+├── 04_improved_analysis.py     # Corrected pipeline: censoring-safe labels, repeated CV,
+│                                #   bootstrap CIs, APOE4 interaction tests, ablation, calibration
+├── 05_generate_figures.py      # Generates all publication-ready figures from corrected results
+│
+├── figures/                    # Output figures from 05_generate_figures.py
+│   ├── fig1_patient_flow.png
+│   ├── fig2_model_comparison.png
+│   ├── fig3_roc_curve.png
+│   ├── fig4_ablation.png
+│   ├── fig5_calibration.png
+│   ├── fig6_interaction_forest.png
+│   ├── fig7_converter_labels.png
+│   └── fig8_shap_importance.png
+│
+├── requirements.txt             # Python dependencies
 └── README.md
 ```
 
@@ -83,7 +153,7 @@ This project uses the **ADNI (Alzheimer's Disease Neuroimaging Initiative)** dat
 
 ---
 
-## 🔬 Notebooks
+## 🔬 Notebooks & Scripts
 
 ### 01_explore.ipynb — Data Exploration
 - Loads DXSUM, REGISTRY, PTDEMOG, cognitive scores
@@ -91,19 +161,27 @@ This project uses the **ADNI (Alzheimer's Disease Neuroimaging Initiative)** dat
 - Merges APOE4 genotype and FreeSurfer MRI volumes
 - Interactive Plotly visualisations: subject counts, APOE4 rates, hippocampal volumes, MMSE/CDR distributions
 
-### 02_converter_labels.ipynb — Converter Definition
+### 02_converter_labels.ipynb — Converter Definition (original)
 - Defines MCI-to-Dementia conversion labels from longitudinal diagnosis records
-- Time-windowed analysis: 24-month and 36-month conversion windows
-- APOE4 conversion rate analysis (49.2% vs 31.4%)
+- Time-windowed analysis: 24-month and 36-month conversion windows were computed but not used for modeling in this version
 - Saves `mci_with_labels.csv` — ML-ready dataset
 
-### 03_modeling.ipynb — Machine Learning
+### 03_modeling.ipynb — Machine Learning (original, superseded)
 - Trains 5 classifiers: Logistic Regression, Random Forest, XGBoost, LightGBM, SVM
-- 5-fold stratified cross-validation + 20% held-out test set
-- KNN imputation + StandardScaler inside Pipeline (no data leakage)
+- Single 80/20 train/test split, default hyperparameters
 - SHAP LinearExplainer for feature importance
-- APOE4 subgroup evaluation
-- Plotly interactive results visualisation
+- Post-hoc APOE4 subgroup evaluation (superseded — see Methodology Corrections)
+
+### 04_improved_analysis.py — Corrected Pipeline
+- Rebuilds converter labels with a censoring-safe 24-month horizon
+- Nested hyperparameter search + 5x5 repeated stratified CV
+- Bootstrap 95% CI on test AUC
+- Formal APOE4 × feature interaction tests (5 candidates, Benjamini-Hochberg corrected)
+- Feature-group ablation study
+- Calibration (Brier score, reliability curve)
+
+### 05_generate_figures.py — Figure Generation
+- Produces all 8 publication-ready figures listed above from the corrected cohort and tuned model
 
 ---
 
@@ -118,6 +196,15 @@ cd adni-mci-ad-prediction
 pip install -r requirements.txt
 ```
 
+## 🔁 Reproducing These Results
+
+Requires approved ADNI data access (see Dataset section above). With `ADNIMERGE_CSVs` populated locally:
+
+```bash
+python 04_improved_analysis.py   # prints corrected metrics to console
+python 05_generate_figures.py    # writes all 8 figures to ./figures
+```
+
 ---
 
 ## 📦 Requirements
@@ -129,6 +216,8 @@ scikit-learn>=1.3
 xgboost>=2.0
 lightgbm>=4.0
 shap>=0.45
+statsmodels>=0.14
+matplotlib>=3.7
 plotly>=5.0
 pyreadr>=0.5
 missingno>=0.5
@@ -139,24 +228,24 @@ jupyter
 
 ## 🔗 Connection to PhD Research (Direction B)
 
-This preliminary work (Direction A) directly motivates the proposed PhD project:
+This preliminary work (Direction A) motivates the proposed PhD project, with the connection now framed around APOE4's role as an independent predictive signal rather than an unproven interaction effect:
 
 | Direction A (This Repository) | Direction B (Proposed PhD) |
 |-------------------------------|---------------------------|
 | Binary classification: will MCI convert? | Generative: what will the brain look like at +12M/+24M? |
-| APOE4 as a predictive feature | APOE4 as a generative conditioning signal (FiLM) |
+| APOE4 as a predictive feature (SHAP rank #2 of 16) | APOE4 as a generative conditioning signal (FiLM) |
 | Output: risk probability | Output: synthesised 3D brain MRI at future timepoint |
-| Finding: APOE4 modulates AUC by 11.5 points | Hypothesis: APOE4 modulates spatiotemporal atrophy trajectory |
-| Method: Logistic Regression + SHAP | Method: 4D Diffusion Transformer in 3D VAE latent space |
+| Finding: APOE4 carries strong independent predictive signal (genetic-only AUC 0.657; SHAP rank #2) | Hypothesis: APOE4 gene-dose modulates spatiotemporal atrophy trajectory — to be tested generatively |
+| Method: Logistic Regression + SHAP, formally tested interactions | Method: 4D Diffusion Transformer in 3D VAE latent space |
 
 ---
 
 ## 👩‍💻 Author
 
-**Sobia Arshad**  
-M.Sc. AI in Healthcare — Inje University, South Korea  
-Korean Government Scholar (GKS)  
-📧 sobiaarshad392@gmail.com  
+**Sobia Arshad**
+M.Sc. AI in Healthcare — Inje University, South Korea
+Korean Government Scholar (GKS)
+📧 sobiaarshad392@gmail.com
 🔗 [github.com/Sobia7590](https://github.com/Sobia7590)
 
 ---
@@ -165,5 +254,5 @@ Korean Government Scholar (GKS)
 
 This project uses ADNI data. ADNI is a public-private partnership. Raw data files are **not included** in this repository and must be obtained independently through the LONI Image and Data Archive ([ida.loni.usc.edu](https://ida.loni.usc.edu)) with approved access.
 
-Principal Investigator: Michael W. Weiner, MD  
+Principal Investigator: Michael W. Weiner, MD
 Data Use Agreement: [ADNI DUA](https://adni.loni.usc.edu/data-samples/access-data/)
