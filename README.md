@@ -1,9 +1,9 @@
 # 🧠 ADNI-MCI-AD-Prediction
 
 **Rigorous Multimodal MCI-to-Alzheimer's Disease Conversion Prediction using the ADNI Dataset**
-> h
+> Preliminary research work for PhD application | Direction A of thesis research
 > Companion code for: *"Rigorous Multimodal Prediction of MCI-to-Alzheimer's Conversion on ADNI: Addressing Censoring Bias and Testing APOE4 Interaction Effects"*
-> Author: Sobia Arshad | Inje University, South Korea | 
+> Author: Sobia Arshad | Inje University, South Korea | GKS Scholar
 
 ---
 
@@ -172,6 +172,17 @@ jupyter
 
 ---
 
+## 🔗 Connection to PhD Research (Direction B)
+
+This preliminary work (Direction A) directly motivates the proposed PhD project, but the connection is grounded in APOE4's standalone predictive signal, not an unproven interaction effect:
+
+| Direction A (This Repository) | Direction B (Proposed PhD) |
+| --- | --- |
+| Binary classification: will MCI convert? | Generative: what will the brain look like at +12M/+24M? |
+| APOE4 as a predictive feature (2nd by SHAP, 16 features) | APOE4 as a generative conditioning signal |
+| Output: risk probability | Output: synthesized 3D brain MRI at future timepoint |
+| Finding: APOE4 is a strong standalone predictor; naive subgroup AUC gap does not survive formal interaction testing | Hypothesis: explicit genotype conditioning improves individualization of generative progression models, independent of whether a population-level interaction effect exists |
+| Method: Logistic Regression + SHAP + corrected interaction testing | Method: 4D Diffusion Transformer, genotype-conditioned |
 
 ---
 
@@ -179,10 +190,10 @@ jupyter
 
 **Sobia Arshad**
 M.Sc. AI in Healthcare — Inje University, South Korea
-
+Korean Government Scholar (GKS)
 📧 <sobiaarshad392@gmail.com>
 🔗 [github.com/Sobia7590](https://github.com/Sobia7590)
-
+🔗 ORCID: 0009-0003-4791-9620
 
 ---
 

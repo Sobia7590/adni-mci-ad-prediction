@@ -97,7 +97,7 @@ box((0.54, 0.10), 0.44, 0.14,
     f"Non-converters\n(>= {HORIZON} months follow-up)\nn = {n_nonconv} ({n_nonconv/n_safe*100:.1f}%)",
     fc='#eafbea')
 
-plt.title("Figure 1. Patient Selection Flow", fontsize=12, weight='bold', pad=10)
+plt.title("Patient Selection Flow", fontsize=12, weight='bold', pad=10)
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig1_patient_flow.png'), bbox_inches='tight')
 plt.close()
@@ -127,7 +127,7 @@ for bar, m in zip(bars, means):
              ha='center', fontsize=10, weight='bold')
 ax.set_ylim(0.5, 1.0)
 ax.set_ylabel('AUC-ROC (5x5 repeated stratified CV)')
-ax.set_title('Figure 2. Model Comparison', fontsize=12, weight='bold')
+ax.set_title(' Model Comparison', fontsize=12, weight='bold')
 ax.axhline(0.8, color='gray', linestyle='--', linewidth=1, alpha=0.6)
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig2_model_comparison.png'), bbox_inches='tight')
@@ -174,7 +174,7 @@ ax.plot(fpr, tpr, color='#e74c3c', linewidth=2,
 ax.plot([0, 1], [0, 1], color='gray', linestyle='--', linewidth=1)
 ax.set_xlabel('False Positive Rate')
 ax.set_ylabel('True Positive Rate')
-ax.set_title('Figure 3. ROC Curve (Test Set)', fontsize=12, weight='bold')
+ax.set_title('ROC Curve (Test Set)', fontsize=12, weight='bold')
 ax.legend(loc='lower right', fontsize=9)
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig3_roc_curve.png'), bbox_inches='tight')
@@ -216,7 +216,7 @@ for bar, m in zip(bars, means):
 ax.axhline(0.5, color='gray', linestyle=':', linewidth=1, label='chance')
 ax.set_ylim(0.4, 1.0)
 ax.set_ylabel('AUC-ROC (5-fold CV)')
-ax.set_title('Figure 4. Feature-Group Ablation', fontsize=12, weight='bold')
+ax.set_title(' Feature-Group Ablation', fontsize=12, weight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig4_ablation.png'), bbox_inches='tight')
 plt.close()
@@ -235,7 +235,7 @@ ax.plot(mean_pred, frac_pos, marker='o', color='#e74c3c', linewidth=2,
         label=f'Logistic Regression (Brier={brier:.3f})')
 ax.set_xlabel('Mean predicted risk')
 ax.set_ylabel('Observed conversion rate')
-ax.set_title('Figure 5. Calibration Curve', fontsize=12, weight='bold')
+ax.set_title(' Calibration Curve', fontsize=12, weight='bold')
 ax.legend(loc='upper left', fontsize=9)
 ax.set_xlim(0, 1); ax.set_ylim(0, 1)
 plt.tight_layout()
@@ -299,7 +299,7 @@ ax.set_yticklabels(ylabels)
 ax.set_xlim(min(r[2] for r in forest_rows) - x_span * 0.1,
             max(r[3] for r in forest_rows) + x_span * 0.35)
 ax.set_xlabel('Interaction coefficient (95% CI)')
-ax.set_title(f'Figure 6. APOE4 x Feature Interaction Tests\n({title_suffix})',
+ax.set_title(f' APOE4 x Feature Interaction Tests\n({title_suffix})',
               fontsize=11.5, weight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig6_interaction_forest.png'), bbox_inches='tight')
@@ -307,15 +307,7 @@ plt.close()
 print("Saved fig6_interaction_forest.png")
 
 
-# %% ------------------------------------------------------------------------
-# FIGURE 7: Converter label overview (corrected, censoring-safe cohort)
-# -----------------------------------------------------------------------------
-# Replaces 02_converter_labels.html, which was built on the old "ever
-# converts, no follow-up floor" label (404/271 split, 62.7% APOE4 rate in
-# converters). Those numbers don't match the corrected cohort used everywhere
-# else in this script and shouldn't be reported alongside the 0.895 AUC
-# headline number -- this figure uses the same mci_24 / CONV_LABEL cohort as
-# everything else, so the paper is internally consistent.
+
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
@@ -340,7 +332,7 @@ for i, v in enumerate(vals):
 axes[2].set_title('APOE4+ Rate by Conversion Status')
 axes[2].set_ylim(0, 100)
 
-plt.suptitle('Figure 7. Corrected Converter Labels (Censoring-Safe Cohort)', fontsize=13, weight='bold')
+plt.suptitle(' Corrected Converter Labels (Censoring-Safe Cohort)', fontsize=13, weight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig7_converter_labels.png'), bbox_inches='tight')
 plt.close()
@@ -376,7 +368,7 @@ ax.barh(shap_df['Feature'], shap_df['SHAP_mean'], color=colors, edgecolor='black
 for i, v in enumerate(shap_df['SHAP_mean']):
     ax.text(v + shap_df['SHAP_mean'].max() * 0.01, i, f'{v:.3f}', va='center', fontsize=9)
 ax.set_xlabel('Mean |SHAP value|')
-ax.set_title('Figure 8. SHAP Feature Importance\n(corrected cohort, tuned Logistic Regression)',
+ax.set_title(' SHAP Feature Importance\n(corrected cohort, tuned Logistic Regression)',
              fontsize=12, weight='bold')
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, 'fig8_shap_importance.png'), bbox_inches='tight')

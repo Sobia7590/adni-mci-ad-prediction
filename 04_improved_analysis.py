@@ -176,22 +176,6 @@ _, lo, hi = bootstrap_auc_ci(y_test, y_prob)
 print(f"\nTest AUC: {point_auc:.3f}  [95% CI {lo:.3f}-{hi:.3f}]  (bootstrap, n=2000)")
 # Report every headline AUC in the paper this way, not as a bare point estimate.
 
-
-# %% ------------------------------------------------------------------------
-# FIX 5 (v2): APOE4 interaction effect, multi-candidate + multiple-comparison
-# correction, on the FULL imputed cohort (not complete-case dropna)
-# -----------------------------------------------------------------------------
-# v1 of this test used dropna(), which cut the usable sample from 473 to 365
-# and lost power. It also only tried one interaction partner (CDRSB), which
-# turned out to have ~zero main effect of its own (p=0.985) -- interacting
-# APOE4 with a feature that isn't predictive by itself is not a fair test.
-#
-# v2 fixes both: impute with the same KNNImputer used for the ML pipeline (so
-# all 473 subjects are used, not just the 365 with zero missingness), and
-# test APOE4's interaction against each of the 5 strongest clinical predictors
-# in turn, then apply a Benjamini-Hochberg correction across the 5 tests so
-# you're not just reporting whichever one happened to look best (p-hacking).
-
 imputer_sm = KNNImputer(n_neighbors=5)
 X_imp = imputer_sm.fit_transform(mci_24[available])
 df_sm = pd.DataFrame(X_imp, columns=available)
@@ -217,18 +201,9 @@ print("\nBenjamini-Hochberg corrected (alpha=0.05, 5 tests):")
 for partner, p_raw, p_c, sig in zip(partner_names, raw_pvals, p_corrected, reject):
     flag = "SIGNIFICANT" if sig else "not significant"
     print(f"  APOE4 x {partner:10s}  raw p={p_raw:.4f}  corrected p={p_c:.4f}  -> {flag}")
-# Whatever survives correction (if anything) is your defensible headline
-# interaction claim. If none survive, that's a valid and reportable result too:
-# "APOE4 shows a significant main effect / ablation contribution but no
-# significant interaction with cognitive decline severity in this cohort" --
-# say that plainly rather than reaching for the subgroup-split framing.
 
 
-# %% ------------------------------------------------------------------------
-# FIX 6: Feature-group ablation
-# -----------------------------------------------------------------------------
-# Justifies the "multimodal" claim in your title/abstract by showing combined
-# features actually beat any single modality, rather than just asserting it.
+
 
 groups = {
     'Cognitive only':   COGNITIVE,
@@ -249,53 +224,14 @@ for gname, feats in groups.items():
     print(f"  {gname:20s} AUC = {scores.mean():.3f} +/- {scores.std():.3f}  (k={len(feats)} features)")
 
 
-# %% ------------------------------------------------------------------------
-# FIX 7: Calibration (is predicted risk = observed risk?)
-# -----------------------------------------------------------------------------
-# AUC only measures ranking, not whether "70% predicted risk" corresponds to
-# roughly 70% observed conversion -- which is what a clinician actually needs.
-
 brier = brier_score_loss(y_test, y_prob)
 frac_pos, mean_pred = calibration_curve(y_test, y_prob, n_bins=10)
 print(f"\nBrier score: {brier:.3f}  (0 = perfect, 0.25 = uninformative)")
 print("Calibration curve points (mean predicted, fraction positive):")
 for mp, fp in zip(mean_pred, frac_pos):
     print(f"  predicted={mp:.2f}  observed={fp:.2f}")
-# Plot mean_pred (x) vs frac_pos (y) against the y=x diagonal as a figure for the paper.
 
 
-# %% ------------------------------------------------------------------------
-# FIX 8 (optional, most rigorous): Cox proportional hazards
-# -----------------------------------------------------------------------------
-# Fully sidesteps the censoring problem in FIX 1 by modeling time-to-conversion
-# directly instead of binarizing it at a horizon. This is the standard
-# approach in the ADNI conversion-prediction literature, so it also puts your
-# results on directly comparable footing with published benchmarks.
-#
-# Uncomment to run (pip install lifelines):
-#
-# from lifelines import CoxPHFitter
-# cox_df = mci[available + ['LAST_VISIT_MONTH', 'CONVERTER']].dropna()
-# cox_df = cox_df.rename(columns={'LAST_VISIT_MONTH': 'duration', 'CONVERTER': 'event'})
-# cph = CoxPHFitter()
-# cph.fit(cox_df, duration_col='duration', event_col='event')
-# cph.print_summary()
-# print(f"Concordance index (AUC-equivalent for survival models): {cph.concordance_index_:.3f}")
-
-
-# %% ------------------------------------------------------------------------
-# NOTE: Amyloid PET (not coded -- schema-dependent)
-# -----------------------------------------------------------------------------
-# Fixmissing.py already extracts UCBERKELEYAV45/AMY PET files to CSV but they
-# were never merged into mci_with_labels.csv. Amyloid status is a core AT(N)
-# biomarker and would strengthen both novelty and performance. To add it:
-#   1. Load the extracted PET CSV, inspect columns for a SUMMARY_SUVR or
-#      AMYLOID_STATUS-type field and a VISCODE2/RID key.
-#   2. Merge onto mci_24 on RID using the baseline visit PET value.
-#   3. Check coverage (%), since PET is often missing for a large subset --
-#      report an "amyloid-available subset" sensitivity analysis if coverage
-#      is under ~60-70%, rather than imputing a biomarker that's structurally
-#      missing (not at random).
 
 print("\nDone. Use CONV_LABEL results (FIX 1-4) and the interaction model (FIX 5) "
       "as your headline numbers instead of the original CONVERTER-based results.")
