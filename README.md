@@ -1,7 +1,6 @@
 # 🧠 ADNI-MCI-AD-Prediction
 
 **Rigorous Multimodal MCI-to-Alzheimer's Disease Conversion Prediction using the ADNI Dataset**
-> Preliminary research work for PhD application | Direction A of thesis research
 > Companion code for: *"Rigorous Multimodal Prediction of MCI-to-Alzheimer's Conversion on ADNI: Addressing Censoring Bias and Testing APOE4 Interaction Effects"*
 > Author: Sobia Arshad | Inje University, South Korea | GKS Scholar
 
